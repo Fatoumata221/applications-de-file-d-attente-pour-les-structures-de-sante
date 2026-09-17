@@ -13,6 +13,11 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 );
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 async function hashCode(code: string): Promise<string> {
   const data = new TextEncoder().encode(code);
   const digest = await crypto.subtle.digest("SHA-256", data);
@@ -22,10 +27,17 @@ async function hashCode(code: string): Promise<string> {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   try {
     const { phone, code } = await req.json();
     if (!phone || !code) {
-      return new Response(JSON.stringify({ error: "Téléphone et code requis" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Téléphone et code requis" }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     }
 
     const { data: otpRow, error: fetchErr } = await supabase
@@ -38,21 +50,33 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (fetchErr || !otpRow) {
-      return new Response(JSON.stringify({ error: "Aucun code en attente pour ce numéro" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Aucun code en attente pour ce numéro" }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     }
 
     if (new Date(otpRow.expires_at) < new Date()) {
-      return new Response(JSON.stringify({ error: "Code expiré, redemandez-en un" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Code expiré, redemandez-en un" }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     }
 
     if (otpRow.attempts >= 5) {
-      return new Response(JSON.stringify({ error: "Trop de tentatives, redemandez un code" }), { status: 429 });
+      return new Response(JSON.stringify({ error: "Trop de tentatives, redemandez un code" }), {
+        status: 429,
+        headers: corsHeaders,
+      });
     }
 
     const codeHash = await hashCode(code);
     if (codeHash !== otpRow.code_hash) {
       await supabase.from("otp_codes").update({ attempts: otpRow.attempts + 1 }).eq("id", otpRow.id);
-      return new Response(JSON.stringify({ error: "Code incorrect" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Code incorrect" }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     }
 
     // Code valide : on le consomme
@@ -92,10 +116,13 @@ Deno.serve(async (req) => {
         action_link: linkData.properties?.action_link,
         hashed_token: linkData.properties?.hashed_token,
       }),
-      { headers: { "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ error: "Erreur serveur" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Erreur serveur" }), {
+      status: 500,
+      headers: corsHeaders,
+    });
   }
 });
