@@ -84,7 +84,7 @@ export default function AgentPage() {
   if (access !== "authorized") {
     return (
       <main className="max-w-3xl mx-auto min-h-screen flex items-center justify-center px-6">
-        <p className="text-muted text-sm">
+        <p className="text-ink-soft text-sm">
           {access === "checking" ? "Vérification de l'accès…" : "Redirection…"}
         </p>
       </main>
@@ -92,33 +92,53 @@ export default function AgentPage() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto min-h-screen px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-serif text-xl font-semibold">File d'attente — aujourd'hui</h1>
-        <button onClick={callNext} className="bg-primary text-white rounded-lg px-4 py-2 text-sm font-semibold">
+    <main className="mx-auto min-h-screen max-w-3xl px-6 py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="font-serif text-2xl font-semibold text-ink">
+          File d&apos;attente — aujourd&apos;hui
+        </h1>
+        <button
+          onClick={callNext}
+          className="rounded-[10px] bg-primary px-4 py-2 text-sm font-semibold text-white"
+        >
           Appeler le patient suivant
         </button>
       </div>
 
-      <div className="bg-white border border-border rounded-xl overflow-hidden">
-        <div className="grid grid-cols-3 px-5 py-3 bg-[#FBFAF6] border-b border-border text-xs font-semibold text-muted">
+      <div className="animate-fade-in-up overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+        <div className="grid grid-cols-3 border-b border-border bg-surface-alt px-5 py-3 text-xs font-semibold text-ink-soft">
           <span>Ticket</span>
           <span>Statut</span>
           <span>Action</span>
         </div>
         {queue.map((row) => (
-          <div key={row.id} className="grid grid-cols-3 items-center px-5 py-3 border-b border-[#F2EFE4]">
-            <span className="font-semibold text-primary">N°{String(row.ticket_number).padStart(3, "0")}</span>
-            <span className="text-sm text-muted capitalize">{row.status.replace("_", " ")}</span>
+          <div
+            key={row.id}
+            className="grid grid-cols-3 items-center border-b border-border px-5 py-3 last:border-0"
+          >
+            <span className="font-serif font-semibold text-primary">
+              N°{String(row.ticket_number).padStart(3, "0")}
+            </span>
+            <span className="text-sm capitalize text-ink-soft">
+              {row.status.replace("_", " ")}
+            </span>
             {row.status === "en_cours" ? (
-              <button onClick={() => finish(row.id)} className="text-sm text-accent font-medium text-left">
+              <button
+                onClick={() => finish(row.id)}
+                className="text-left text-sm font-medium text-accent"
+              >
                 Marquer terminé
               </button>
             ) : (
-              <span className="text-sm text-muted">—</span>
+              <span className="text-sm text-ink-soft">—</span>
             )}
           </div>
         ))}
+        {queue.length === 0 && (
+          <p className="px-5 py-6 text-sm text-ink-soft">
+            Aucun ticket pour aujourd&apos;hui.
+          </p>
+        )}
       </div>
     </main>
   );

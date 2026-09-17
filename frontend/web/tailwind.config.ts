@@ -5,16 +5,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#1E4E79",
-        "primary-dark": "#153A5C",
-        accent: "#E8734A",
-        bg: "#F7F5EF",
-        ink: "#16232E",
-        muted: "#8B9490",
-        border: "#E4E0D5",
+        primary: "var(--color-primary)",
+        "primary-dark": "var(--color-primary-dark)",
+        accent: "var(--color-accent)",
+        "accent-soft": "var(--color-accent-soft)",
+        background: "var(--color-background)",
+        surface: "var(--color-surface)",
+        "surface-alt": "var(--color-surface-alt)",
+        ink: "var(--color-ink)",
+        "ink-soft": "var(--color-ink-soft)",
+        border: "var(--color-border)",
+        danger: "var(--color-danger)",
       },
       fontFamily: {
-        serif: ["Lora", "Georgia", "serif"],
+        serif: ["Fraunces", "Georgia", "serif"],
         sans: ["Work Sans", "system-ui", "sans-serif"],
       },
       borderRadius: {

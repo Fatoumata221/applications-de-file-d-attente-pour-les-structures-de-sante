@@ -12,10 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Work+Sans:wght@400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap"
         />
       </head>
-      <body className="bg-bg text-ink font-sans min-h-screen">{children}</body>
+      <body className="bg-background text-ink font-sans min-h-screen">{children}</body>
     </html>
   );
 }

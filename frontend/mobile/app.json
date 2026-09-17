@@ -23,7 +23,8 @@
         {
           "backgroundColor": "#F7F5EF"
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }
