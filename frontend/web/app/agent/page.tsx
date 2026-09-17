@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 type Row = {
@@ -9,8 +10,39 @@ type Row = {
   status: string;
 };
 
+type AccessState = "checking" | "authorized" | "denied";
+
 export default function AgentPage() {
+  const router = useRouter();
+  const [access, setAccess] = useState<AccessState>("checking");
   const [queue, setQueue] = useState<Row[]>([]);
+
+  useEffect(() => {
+    async function checkAccess() {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) {
+        setAccess("denied");
+        router.replace("/login");
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (!profile || !["agent", "admin"].includes(profile.role)) {
+        setAccess("denied");
+        router.replace("/login");
+        return;
+      }
+
+      setAccess("authorized");
+    }
+    checkAccess();
+  }, [router]);
 
   async function load() {
     const { data } = await supabase
@@ -22,6 +54,7 @@ export default function AgentPage() {
   }
 
   useEffect(() => {
+    if (access !== "authorized") return;
     load();
     const channel = supabase
       .channel("agent_queue")
@@ -30,7 +63,7 @@ export default function AgentPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [access]);
 
   async function callNext() {
     const next = queue.find((r) => r.status === "en_attente");
@@ -46,6 +79,16 @@ export default function AgentPage() {
       .from("queue_tickets")
       .update({ status: "termine", finished_at: new Date().toISOString() })
       .eq("id", id);
+  }
+
+  if (access !== "authorized") {
+    return (
+      <main className="max-w-3xl mx-auto min-h-screen flex items-center justify-center px-6">
+        <p className="text-muted text-sm">
+          {access === "checking" ? "Vérification de l'accès…" : "Redirection…"}
+        </p>
+      </main>
+    );
   }
 
   return (
