@@ -8,11 +8,12 @@ backend **Supabase**, web déployé sur **Vercel**, mobile natif via **Expo**.
 
 ```
 ./
-├── backend/               # Supabase
-│   ├── schema.sql            # tables + RLS
-│   └── functions/
-│       ├── send-otp/         # envoie le code par SMS (LAMPUSH)
-│       └── verify-otp/       # vérifie le code, crée la session
+├── backend/
+│   └── supabase/            # convention standard de la CLI Supabase
+│       ├── schema.sql          # tables + RLS + trigger queue_tickets
+│       └── functions/
+│           ├── send-otp/       # envoie le code par SMS (LAMPUSH), fallback dev-mode sans creds LAM
+│           └── verify-otp/     # vérifie le code, crée la session
 └── frontend/
     ├── web/       # Next.js — déployé sur Vercel
     └── mobile/    # Expo / React Native — build via EAS
@@ -20,28 +21,29 @@ backend **Supabase**, web déployé sur **Vercel**, mobile natif via **Expo**.
 
 ## 1. Mettre en place Supabase
 
+Depuis `backend/` (la CLI y trouve `supabase/` automatiquement) :
+
 ```bash
+cd backend
 npm install -g supabase
-supabase login
+supabase login                                    # ou SUPABASE_ACCESS_TOKEN=<token perso>
 supabase link --project-ref <votre-project-ref>
 
-# Appliquer le schéma
-supabase db push --file backend/schema.sql
+# Appliquer le schéma (ou coller son contenu dans l'éditeur SQL du dashboard)
+supabase db push --file supabase/schema.sql
 
-# Déployer les fonctions OTP
-supabase functions deploy send-otp --project-ref <votre-project-ref> --import-map backend/functions/send-otp
-supabase functions deploy verify-otp --project-ref <votre-project-ref> --import-map backend/functions/verify-otp
+# Déployer les fonctions OTP (--use-api évite d'avoir besoin de Docker)
+supabase functions deploy send-otp --use-api
+supabase functions deploy verify-otp --use-api
 
 # Secrets nécessaires aux fonctions (valeurs reçues de LAfricaMobile
 # une fois votre compte de production activé — cf. assistance@lafricamobile.com)
+# Tant qu'ils ne sont pas définis, send-otp bascule en mode dev : le code
+# OTP est affiché dans les logs de la fonction au lieu d'être envoyé par SMS.
 supabase secrets set LAM_ACCOUNT_ID=xxxx
 supabase secrets set LAM_PASSWORD=xxxx
 supabase secrets set LAM_SENDER=TourDeRole
 ```
-
-> Les Edge Functions vivent maintenant dans `backend/functions/` — lance les
-> commandes `supabase functions deploy` depuis la racine de `backend/`, ou
-> ajoute `--project-ref` / le chemin complet selon ta version de la CLI.
 
 Récupérez ensuite, dans **Project Settings → API** :
 - `SUPABASE_URL`
