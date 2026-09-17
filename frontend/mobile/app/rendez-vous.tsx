@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet, FlatList } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { supabase } from "../lib/supabaseClient";
 import { Fonts, useTheme } from "../constants/theme";
 import PillTabs from "../components/PillTabs";
@@ -9,6 +10,7 @@ type Slot = { id: string; starts_at: string; service_id: string };
 
 export default function RendezVousScreen() {
   const theme = useTheme();
+  const { centre: centreId } = useLocalSearchParams<{ centre?: string }>();
   const [services, setServices] = useState<Service[]>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -16,11 +18,10 @@ export default function RendezVousScreen() {
   const [confirmed, setConfirmed] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from("services")
-      .select("id, name, centre_id")
-      .then(({ data }) => setServices(data ?? []));
-  }, []);
+    let query = supabase.from("services").select("id, name, centre_id");
+    if (centreId) query = query.eq("centre_id", centreId);
+    query.then(({ data }) => setServices(data ?? []));
+  }, [centreId]);
 
   useEffect(() => {
     if (!selectedService) return;

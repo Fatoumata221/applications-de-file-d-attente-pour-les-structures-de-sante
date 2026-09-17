@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Fonts, useTheme } from "../constants/theme";
 
 const tabs = [
+  { href: "/centres" as const, label: "Centres" },
   { href: "/rendez-vous" as const, label: "Prendre RDV" },
   { href: "/file-attente" as const, label: "File d'attente" },
 ];

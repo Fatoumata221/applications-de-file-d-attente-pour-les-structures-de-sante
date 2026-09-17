@@ -38,7 +38,7 @@ export default function LoginScreen() {
     setError(null);
     try {
       await verifyOtp(`+221${phone}`, code);
-      router.replace("/rendez-vous");
+      router.replace("/centres");
     } catch {
       setError("Code incorrect ou expiré.");
     } finally {

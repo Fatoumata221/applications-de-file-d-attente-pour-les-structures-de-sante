@@ -47,6 +47,7 @@ export default function RootLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ title: "Tour de Rôle" }} />
+      <Stack.Screen name="centres" options={{ title: "Centres de santé" }} />
       <Stack.Screen
         name="rendez-vous"
         options={{ title: "Nouveau rendez-vous" }}
