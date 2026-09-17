@@ -123,6 +123,7 @@ function RendezVousContent() {
                     {new Date(slot.starts_at).toLocaleTimeString("fr-FR", {
                       hour: "2-digit",
                       minute: "2-digit",
+                      timeZone: "Africa/Dakar",
                     })}
                   </button>
                 ))}

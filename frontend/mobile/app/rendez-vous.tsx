@@ -123,6 +123,7 @@ export default function RendezVousScreen() {
                       {new Date(item.starts_at).toLocaleTimeString("fr-FR", {
                         hour: "2-digit",
                         minute: "2-digit",
+                        timeZone: "Africa/Dakar",
                       })}
                     </Text>
                   </Pressable>

@@ -76,6 +76,7 @@ export default function HistoriquePage() {
                     month: "short",
                     hour: "2-digit",
                     minute: "2-digit",
+                    timeZone: "Africa/Dakar",
                   })}
                 </p>
               </div>
