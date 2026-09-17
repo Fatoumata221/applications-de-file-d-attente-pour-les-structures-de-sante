@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Tour de Rôle",
+    "slug": "tour-de-role",
+    "scheme": "tourderole",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F7F5EF"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "sn.leerinnov.tourderole"
+    },
+    "android": {
+      "package": "sn.leerinnov.tourderole",
+      "adaptiveIcon": {
+        "backgroundColor": "#1E4E79"
+      }
+    },
+    "plugins": ["expo-router"]
+  }
+}
