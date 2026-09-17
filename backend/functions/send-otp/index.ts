@@ -7,12 +7,18 @@
 //   supabase functions deploy send-otp
 // Variables d'environnement à configurer (supabase secrets set) :
 //   LAM_ACCOUNT_ID, LAM_PASSWORD, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+//
+// Tant que LAM_ACCOUNT_ID / LAM_PASSWORD ne sont pas configurés (compte
+// LAfricaMobile pas encore activé), la fonction bascule en mode dev : le
+// code n'est pas envoyé par SMS, il est juste affiché dans les logs de la
+// fonction (dashboard Supabase → Edge Functions → send-otp → Logs).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const LAM_ACCOUNT_ID = Deno.env.get("LAM_ACCOUNT_ID")!;
-const LAM_PASSWORD = Deno.env.get("LAM_PASSWORD")!;
+const LAM_ACCOUNT_ID = Deno.env.get("LAM_ACCOUNT_ID");
+const LAM_PASSWORD = Deno.env.get("LAM_PASSWORD");
 const LAM_SENDER = Deno.env.get("LAM_SENDER") ?? "TourDeRole";
+const DEV_MODE = !LAM_ACCOUNT_ID || !LAM_PASSWORD;
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -73,9 +79,13 @@ Deno.serve(async (req) => {
     });
     if (error) throw error;
 
-    await sendSms(phone, `Tour de Rôle : votre code de connexion est ${code}. Valable 5 minutes.`);
+    if (DEV_MODE) {
+      console.log(`[DEV MODE] Code OTP pour ${phone} : ${code}`);
+    } else {
+      await sendSms(phone, `Tour de Rôle : votre code de connexion est ${code}. Valable 5 minutes.`);
+    }
 
-    return new Response(JSON.stringify({ ok: true }), {
+    return new Response(JSON.stringify({ ok: true, dev_mode: DEV_MODE }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
