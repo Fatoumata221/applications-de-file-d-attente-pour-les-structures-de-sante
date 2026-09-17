@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet, FlatList } from "react-native";
 import { supabase } from "../lib/supabaseClient";
-
-const colors = { primary: "#1E4E79", accent: "#E8734A", bg: "#F7F5EF", border: "#E4E0D5", ink: "#16232E", muted: "#8B9490" };
+import { Fonts, useTheme } from "../constants/theme";
+import PillTabs from "../components/PillTabs";
 
 type Service = { id: string; name: string; centre_id: string };
 type Slot = { id: string; starts_at: string; service_id: string };
 
 export default function RendezVousScreen() {
+  const theme = useTheme();
   const [services, setServices] = useState<Service[]>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -15,7 +16,10 @@ export default function RendezVousScreen() {
   const [confirmed, setConfirmed] = useState(false);
 
   useEffect(() => {
-    supabase.from("services").select("id, name, centre_id").then(({ data }) => setServices(data ?? []));
+    supabase
+      .from("services")
+      .select("id, name, centre_id")
+      .then(({ data }) => setServices(data ?? []));
   }, []);
 
   useEffect(() => {
@@ -43,66 +47,145 @@ export default function RendezVousScreen() {
       slot_id: selectedSlot,
       scheduled_at: slot.starts_at,
     });
-    await supabase.from("slots").update({ is_booked: true }).eq("id", selectedSlot);
+    await supabase
+      .from("slots")
+      .update({ is_booked: true })
+      .eq("id", selectedSlot);
     setConfirmed(true);
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionLabel}>Service</Text>
-      <View style={styles.chipRow}>
-        {services.map((svc) => (
-          <Pressable
-            key={svc.id}
-            onPress={() => setSelectedService(svc.id)}
-            style={[styles.chip, selectedService === svc.id && { backgroundColor: colors.primary, borderColor: colors.primary }]}
-          >
-            <Text style={[styles.chipText, selectedService === svc.id && { color: "#fff" }]}>{svc.name}</Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {selectedService && (
-        <>
-          <Text style={styles.sectionLabel}>Créneau disponible</Text>
-          <FlatList
-            data={slots}
-            numColumns={3}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <PillTabs />
+      <View style={styles.container}>
+        <Text style={[styles.sectionLabel, { color: theme.inkSoft }]}>
+          Service
+        </Text>
+        <View style={styles.chipRow}>
+          {services.map((svc) => {
+            const active = selectedService === svc.id;
+            return (
               <Pressable
-                onPress={() => setSelectedSlot(item.id)}
-                style={[styles.slot, selectedSlot === item.id && { backgroundColor: colors.accent, borderColor: colors.accent }]}
+                key={svc.id}
+                onPress={() => setSelectedService(svc.id)}
+                style={[
+                  styles.chip,
+                  {
+                    borderColor: active ? theme.primary : theme.border,
+                    backgroundColor: active ? theme.primary : theme.surface,
+                  },
+                ]}
               >
-                <Text style={styles.slotText}>
-                  {new Date(item.starts_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                <Text
+                  style={[
+                    styles.chipText,
+                    { color: active ? "#fff" : theme.ink },
+                  ]}
+                >
+                  {svc.name}
                 </Text>
               </Pressable>
-            )}
-          />
-        </>
-      )}
+            );
+          })}
+        </View>
 
-      {selectedSlot && !confirmed && (
-        <Pressable style={styles.confirmButton} onPress={confirm}>
-          <Text style={styles.confirmText}>Confirmer le rendez-vous</Text>
-        </Pressable>
-      )}
+        {selectedService && (
+          <>
+            <Text style={[styles.sectionLabel, { color: theme.inkSoft }]}>
+              Créneau disponible
+            </Text>
+            <FlatList
+              data={slots}
+              numColumns={3}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => {
+                const active = selectedSlot === item.id;
+                return (
+                  <Pressable
+                    onPress={() => setSelectedSlot(item.id)}
+                    style={[
+                      styles.slot,
+                      {
+                        borderColor: active ? theme.accent : theme.border,
+                        backgroundColor: active
+                          ? theme.accent
+                          : theme.surface,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.slotText,
+                        { color: active ? theme.primaryDark : theme.ink },
+                      ]}
+                    >
+                      {new Date(item.starts_at).toLocaleTimeString("fr-FR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Text>
+                  </Pressable>
+                );
+              }}
+            />
+          </>
+        )}
 
-      {confirmed && <Text style={styles.confirmedText}>Rendez-vous confirmé ! Un SMS vous a été envoyé.</Text>}
+        {selectedSlot && !confirmed && (
+          <Pressable
+            style={[styles.confirmButton, { backgroundColor: theme.primary }]}
+            onPress={confirm}
+          >
+            <Text style={styles.confirmText}>Confirmer le rendez-vous</Text>
+          </Pressable>
+        )}
+
+        {confirmed && (
+          <Text
+            style={[
+              styles.confirmedText,
+              {
+                color: theme.ink,
+                backgroundColor: theme.surface,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            Rendez-vous confirmé ! Un SMS vous a été envoyé.
+          </Text>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg, padding: 20, gap: 16 },
-  sectionLabel: { fontSize: 13, fontWeight: "500", color: colors.muted, marginBottom: 6 },
+  container: { flex: 1, padding: 20, gap: 16 },
+  sectionLabel: { fontFamily: Fonts.sansMedium, fontSize: 13, marginBottom: 6 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: colors.border, backgroundColor: "#fff" },
-  chipText: { fontSize: 13, fontWeight: "500", color: colors.ink },
-  slot: { flex: 1, margin: 4, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: colors.border, backgroundColor: "#fff", alignItems: "center" },
-  slotText: { fontSize: 13, fontWeight: "500", color: colors.ink },
-  confirmButton: { backgroundColor: colors.primary, borderRadius: 12, paddingVertical: 14, alignItems: "center" },
-  confirmText: { color: "#fff", fontWeight: "600", fontSize: 15 },
-  confirmedText: { fontSize: 13, color: colors.ink, backgroundColor: "#fff", padding: 14, borderRadius: 12, borderWidth: 1, borderColor: colors.border },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  chipText: { fontFamily: Fonts.sansMedium, fontSize: 13 },
+  slot: {
+    flex: 1,
+    margin: 4,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  slotText: { fontFamily: Fonts.sansMedium, fontSize: 13 },
+  confirmButton: { borderRadius: 10, paddingVertical: 14, alignItems: "center" },
+  confirmText: { color: "#fff", fontFamily: Fonts.sansSemiBold, fontSize: 15 },
+  confirmedText: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
 });

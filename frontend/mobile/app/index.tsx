@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { requestOtp, verifyOtp } from "../lib/otp";
-
-const colors = {
-  primary: "#1E4E79",
-  accent: "#E8734A",
-  bg: "#F7F5EF",
-  border: "#E4E0D5",
-  ink: "#16232E",
-  muted: "#8B9490",
-};
+import { Fonts, useTheme } from "../constants/theme";
 
 export default function LoginScreen() {
+  const theme = useTheme();
   const router = useRouter();
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -47,73 +47,145 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.subtitle}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.subtitle, { color: theme.inkSoft }]}>
         Prenez rendez-vous et suivez votre tour, sans attendre sur place.
       </Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Connexion</Text>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: theme.surface, borderColor: theme.border },
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: theme.ink }]}>
+          Connexion
+        </Text>
 
         {step === "phone" ? (
           <>
-            <Text style={styles.label}>Numéro de téléphone</Text>
-            <View style={styles.phoneRow}>
-              <Text style={styles.prefix}>+221</Text>
+            <Text style={[styles.label, { color: theme.inkSoft }]}>
+              Numéro de téléphone
+            </Text>
+            <View
+              style={[
+                styles.phoneRow,
+                {
+                  borderColor: theme.border,
+                  backgroundColor: theme.surfaceAlt,
+                },
+              ]}
+            >
+              <Text style={[styles.prefix, { color: theme.inkSoft }]}>
+                +221
+              </Text>
               <TextInput
-                style={styles.phoneInput}
+                style={[styles.phoneInput, { color: theme.ink }]}
                 keyboardType="number-pad"
                 placeholder="77 123 45 67"
+                placeholderTextColor={theme.inkSoft}
                 value={phone}
                 onChangeText={(t) => setPhone(t.replace(/\D/g, ""))}
               />
             </View>
             <Pressable
-              style={[styles.button, { backgroundColor: colors.accent }]}
+              style={[
+                styles.button,
+                { backgroundColor: theme.accent },
+                (phone.length < 9 || loading) && styles.buttonDisabled,
+              ]}
               onPress={handleSend}
               disabled={phone.length < 9 || loading}
             >
-              {loading ? <ActivityIndicator /> : <Text style={styles.buttonTextDark}>Recevoir mon code par SMS</Text>}
+              {loading ? (
+                <ActivityIndicator />
+              ) : (
+                <Text
+                  style={[styles.buttonText, { color: theme.primaryDark }]}
+                >
+                  Recevoir mon code par SMS
+                </Text>
+              )}
             </Pressable>
           </>
         ) : (
           <>
-            <Text style={styles.label}>Code reçu par SMS</Text>
+            <Text style={[styles.label, { color: theme.inkSoft }]}>
+              Code reçu par SMS
+            </Text>
             <TextInput
-              style={styles.otpInput}
+              style={[
+                styles.otpInput,
+                { borderColor: theme.primary, color: theme.primary },
+              ]}
               keyboardType="number-pad"
               maxLength={6}
               value={code}
               onChangeText={(t) => setCode(t.replace(/\D/g, ""))}
             />
             <Pressable
-              style={[styles.button, { backgroundColor: colors.primary }]}
+              style={[
+                styles.button,
+                { backgroundColor: theme.primary },
+                (code.length < 6 || loading) && styles.buttonDisabled,
+              ]}
               onPress={handleVerify}
               disabled={code.length < 6 || loading}
             >
-              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Valider et continuer</Text>}
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={[styles.buttonText, { color: "#fff" }]}>
+                  Valider et continuer
+                </Text>
+              )}
             </Pressable>
           </>
         )}
 
-        {error && <Text style={styles.error}>{error}</Text>}
+        {error && (
+          <Text style={[styles.error, { color: theme.danger }]}>
+            {error}
+          </Text>
+        )}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg, padding: 20 },
-  subtitle: { color: colors.muted, fontSize: 14, marginBottom: 20, lineHeight: 20 },
-  card: { backgroundColor: "#fff", borderColor: colors.border, borderWidth: 1, borderRadius: 16, padding: 18, gap: 12 },
-  cardTitle: { fontSize: 17, fontWeight: "600", color: colors.ink },
-  label: { fontSize: 13, fontWeight: "500", color: colors.muted },
-  phoneRow: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: "#FBFAF6" },
-  prefix: { color: colors.muted, fontSize: 15 },
-  phoneInput: { flex: 1, fontSize: 15, color: colors.ink },
-  otpInput: { borderWidth: 1, borderColor: colors.primary, borderRadius: 10, textAlign: "center", fontSize: 22, fontWeight: "600", paddingVertical: 12, letterSpacing: 6, color: colors.primary },
+  container: { flex: 1, padding: 20 },
+  subtitle: {
+    fontFamily: Fonts.sans,
+    fontSize: 14,
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  card: { borderWidth: 1, borderRadius: 16, padding: 18, gap: 12 },
+  cardTitle: { fontFamily: Fonts.serif, fontSize: 18 },
+  label: { fontFamily: Fonts.sansMedium, fontSize: 13 },
+  phoneRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  prefix: { fontFamily: Fonts.sans, fontSize: 15 },
+  phoneInput: { flex: 1, fontFamily: Fonts.sans, fontSize: 15 },
+  otpInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    textAlign: "center",
+    fontFamily: Fonts.serif,
+    fontSize: 22,
+    paddingVertical: 12,
+    letterSpacing: 6,
+  },
   button: { borderRadius: 10, paddingVertical: 13, alignItems: "center" },
-  buttonText: { color: "#fff", fontWeight: "600", fontSize: 15 },
-  buttonTextDark: { color: "#241705", fontWeight: "600", fontSize: 15 },
-  error: { color: "#B7563B", fontSize: 13 },
+  buttonDisabled: { opacity: 0.5 },
+  buttonText: { fontFamily: Fonts.sansSemiBold, fontSize: 15 },
+  error: { fontFamily: Fonts.sans, fontSize: 13 },
 });

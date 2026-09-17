@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { supabase } from "../lib/supabaseClient";
-
-const colors = { primary: "#1E4E79", bg: "#F7F5EF", border: "#E4E0D5", ink: "#16232E", muted: "#8B9490" };
+import { Fonts, useTheme } from "../constants/theme";
+import PillTabs from "../components/PillTabs";
 
 type Ticket = { id: string; ticket_number: number; service_id: string };
 
 export default function FileAttenteScreen() {
+  const theme = useTheme();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [position, setPosition] = useState<number | null>(null);
 
@@ -45,7 +47,11 @@ export default function FileAttenteScreen() {
 
     const channel = supabase
       .channel("queue_mobile")
-      .on("postgres_changes", { event: "*", schema: "public", table: "queue_tickets" }, load)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "queue_tickets" },
+        load,
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -54,45 +60,125 @@ export default function FileAttenteScreen() {
 
   if (!ticket) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <Text style={{ color: colors.muted }}>Aucun ticket actif pour le moment.</Text>
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
+        <PillTabs />
+        <View style={[styles.container, styles.centered]}>
+          <Text style={{ color: theme.inkSoft, fontFamily: Fonts.sans }}>
+            Aucun ticket actif pour le moment.
+          </Text>
+        </View>
       </View>
     );
   }
 
+  const totalAhead = Math.max(ticket.ticket_number - 1, 0);
+  const progressPct =
+    totalAhead > 0
+      ? Math.min(
+          100,
+          Math.max(
+            5,
+            Math.round(((totalAhead - (position ?? 0)) / totalAhead) * 100),
+          ),
+        )
+      : 100;
+
   return (
-    <View style={styles.container}>
-      <View style={styles.ticketCard}>
-        <Text style={styles.ticketLabel}>VOTRE NUMÉRO DE TICKET</Text>
-        <Text style={styles.ticketNumber}>N°{String(ticket.ticket_number).padStart(3, "0")}</Text>
-      </View>
-
-      <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Patients avant vous</Text>
-          <Text style={styles.statValue}>{position}</Text>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <PillTabs />
+      <View style={styles.container}>
+        <View
+          style={[
+            styles.ticketCard,
+            { backgroundColor: theme.surface, borderColor: theme.border },
+          ]}
+        >
+          <Text style={[styles.ticketLabel, { color: theme.inkSoft }]}>
+            VOTRE NUMÉRO DE TICKET
+          </Text>
+          <Text style={[styles.ticketNumber, { color: theme.primary }]}>
+            N°{String(ticket.ticket_number).padStart(3, "0")}
+          </Text>
+          <View
+            style={[styles.progressTrack, { backgroundColor: theme.surfaceAlt }]}
+          >
+            <LinearGradient
+              colors={[theme.accent, theme.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.progressFill, { width: `${progressPct}%` }]}
+            />
+          </View>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Attente estimée</Text>
-          <Text style={styles.statValue}>~{(position ?? 0) * 8} min</Text>
-        </View>
-      </View>
 
-      <Text style={styles.note}>
-        Cet écran se met à jour automatiquement. Vous recevrez aussi un SMS quand ce sera bientôt votre tour.
-      </Text>
+        <View style={styles.statsRow}>
+          <View
+            style={[
+              styles.statCard,
+              { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+            ]}
+          >
+            <Text style={[styles.statLabel, { color: theme.inkSoft }]}>
+              Patients avant vous
+            </Text>
+            <Text style={[styles.statValue, { color: theme.primary }]}>
+              {position}
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.statCard,
+              { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+            ]}
+          >
+            <Text style={[styles.statLabel, { color: theme.inkSoft }]}>
+              Attente estimée
+            </Text>
+            <Text style={[styles.statValue, { color: theme.primary }]}>
+              ~{(position ?? 0) * 8} min
+            </Text>
+          </View>
+        </View>
+
+        <Text style={[styles.note, { color: theme.inkSoft }]}>
+          Cet écran se met à jour automatiquement. Vous recevrez aussi un SMS
+          quand ce sera bientôt votre tour.
+        </Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg, padding: 20, gap: 16 },
-  ticketCard: { backgroundColor: colors.primary, borderRadius: 20, padding: 24, alignItems: "center", gap: 4 },
-  ticketLabel: { color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: "600" },
-  ticketNumber: { color: "#fff", fontSize: 44, fontWeight: "700" },
+  container: { flex: 1, padding: 20, gap: 16 },
+  centered: { justifyContent: "center", alignItems: "center" },
+  ticketCard: {
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: "center",
+    gap: 12,
+  },
+  ticketLabel: {
+    fontFamily: Fonts.sansSemiBold,
+    fontSize: 11,
+    letterSpacing: 1,
+  },
+  ticketNumber: { fontFamily: Fonts.serifBold, fontSize: 48 },
+  progressTrack: {
+    width: "100%",
+    height: 8,
+    borderRadius: 999,
+    overflow: "hidden",
+  },
+  progressFill: { height: "100%", borderRadius: 999 },
   statsRow: { flexDirection: "row", gap: 12 },
-  statCard: { flex: 1, backgroundColor: "#fff", borderColor: colors.border, borderWidth: 1, borderRadius: 14, padding: 16 },
-  statLabel: { fontSize: 12, color: colors.muted },
-  statValue: { fontSize: 24, fontWeight: "700", color: colors.primary, marginTop: 4 },
-  note: { fontSize: 12, color: colors.muted, lineHeight: 18 },
+  statCard: { flex: 1, borderWidth: 1, borderRadius: 14, padding: 16 },
+  statLabel: { fontFamily: Fonts.sans, fontSize: 12 },
+  statValue: {
+    fontFamily: Fonts.serif,
+    fontSize: 24,
+    marginTop: 4,
+  },
+  note: { fontFamily: Fonts.sans, fontSize: 12, lineHeight: 18 },
 });
