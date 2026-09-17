@@ -1,191 +1,128 @@
-import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
 import { useRouter } from "expo-router";
-import { requestOtp, verifyOtp } from "../lib/otp";
+import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { Fonts, useTheme } from "../constants/theme";
 
-export default function LoginScreen() {
+const steps = [
+  {
+    title: "Choisissez un centre",
+    text: "Comparez les centres de santé disponibles près de chez vous et l'affluence en temps réel.",
+  },
+  {
+    title: "Prenez rendez-vous",
+    text: "Sélectionnez un service et un créneau libre en quelques secondes.",
+  },
+  {
+    title: "Suivez votre tour",
+    text: "Un ticket virtuel vous indique votre position exacte — venez seulement quand c'est bientôt votre tour.",
+  },
+];
+
+export default function HomeScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSend() {
-    setLoading(true);
-    setError(null);
-    try {
-      await requestOtp(`+221${phone}`);
-      setStep("otp");
-    } catch {
-      setError("Impossible d'envoyer le code, réessayez.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleVerify() {
-    setLoading(true);
-    setError(null);
-    try {
-      await verifyOtp(`+221${phone}`, code);
-      router.replace("/centres");
-    } catch {
-      setError("Code incorrect ou expiré.");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.subtitle, { color: theme.inkSoft }]}>
-        Prenez rendez-vous et suivez votre tour, sans attendre sur place.
-      </Text>
-
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: theme.surface, borderColor: theme.border },
-        ]}
-      >
-        <Text style={[styles.cardTitle, { color: theme.ink }]}>
-          Connexion
+    <ScrollView
+      style={{ backgroundColor: theme.background }}
+      contentContainerStyle={{ paddingBottom: 40 }}
+    >
+      <View style={[styles.hero, { backgroundColor: theme.primary }]}>
+        <Text style={[styles.eyebrow, { color: theme.accent }]}>
+          Centres de santé sénégalais
         </Text>
-
-        {step === "phone" ? (
-          <>
-            <Text style={[styles.label, { color: theme.inkSoft }]}>
-              Numéro de téléphone
-            </Text>
-            <View
-              style={[
-                styles.phoneRow,
-                {
-                  borderColor: theme.border,
-                  backgroundColor: theme.surfaceAlt,
-                },
-              ]}
-            >
-              <Text style={[styles.prefix, { color: theme.inkSoft }]}>
-                +221
-              </Text>
-              <TextInput
-                style={[styles.phoneInput, { color: theme.ink }]}
-                keyboardType="number-pad"
-                placeholder="77 123 45 67"
-                placeholderTextColor={theme.inkSoft}
-                value={phone}
-                onChangeText={(t) => setPhone(t.replace(/\D/g, ""))}
-              />
-            </View>
-            <Pressable
-              style={[
-                styles.button,
-                { backgroundColor: theme.accent },
-                (phone.length < 9 || loading) && styles.buttonDisabled,
-              ]}
-              onPress={handleSend}
-              disabled={phone.length < 9 || loading}
-            >
-              {loading ? (
-                <ActivityIndicator />
-              ) : (
-                <Text
-                  style={[styles.buttonText, { color: theme.primaryDark }]}
-                >
-                  Recevoir mon code par SMS
-                </Text>
-              )}
-            </Pressable>
-          </>
-        ) : (
-          <>
-            <Text style={[styles.label, { color: theme.inkSoft }]}>
-              Code reçu par SMS
-            </Text>
-            <TextInput
-              style={[
-                styles.otpInput,
-                { borderColor: theme.primary, color: theme.primary },
-              ]}
-              keyboardType="number-pad"
-              maxLength={6}
-              value={code}
-              onChangeText={(t) => setCode(t.replace(/\D/g, ""))}
-            />
-            <Pressable
-              style={[
-                styles.button,
-                { backgroundColor: theme.primary },
-                (code.length < 6 || loading) && styles.buttonDisabled,
-              ]}
-              onPress={handleVerify}
-              disabled={code.length < 6 || loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={[styles.buttonText, { color: "#fff" }]}>
-                  Valider et continuer
-                </Text>
-              )}
-            </Pressable>
-          </>
-        )}
-
-        {error && (
-          <Text style={[styles.error, { color: theme.danger }]}>
-            {error}
+        <Text style={styles.heroTitle}>Votre tour, sans faire la queue.</Text>
+        <Text style={styles.heroText}>
+          Prenez rendez-vous dans un centre de santé et suivez la file
+          d&apos;attente en direct depuis votre téléphone.
+        </Text>
+        <Pressable
+          style={[styles.ctaButton, { backgroundColor: theme.accent }]}
+          onPress={() => router.push("/login")}
+        >
+          <Text style={[styles.ctaText, { color: theme.primaryDark }]}>
+            Se connecter
           </Text>
-        )}
+        </Pressable>
       </View>
-    </View>
+
+      <View style={styles.stepsSection}>
+        <Text style={[styles.sectionTitle, { color: theme.ink }]}>
+          Comment ça marche
+        </Text>
+        {steps.map((step, i) => (
+          <View
+            key={step.title}
+            style={[
+              styles.stepCard,
+              { backgroundColor: theme.surface, borderColor: theme.border },
+            ]}
+          >
+            <View style={styles.stepHeader}>
+              <View
+                style={[
+                  styles.stepBadge,
+                  { backgroundColor: theme.accentSoft },
+                ]}
+              >
+                <Text style={[styles.stepBadgeText, { color: theme.primaryDark }]}>
+                  {i + 1}
+                </Text>
+              </View>
+              <Text style={[styles.stepTitle, { color: theme.ink }]}>
+                {step.title}
+              </Text>
+            </View>
+            <Text style={[styles.stepText, { color: theme.inkSoft }]}>
+              {step.text}
+            </Text>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  subtitle: {
+  hero: { paddingHorizontal: 24, paddingTop: 48, paddingBottom: 40 },
+  eyebrow: {
+    fontFamily: Fonts.sansSemiBold,
+    fontSize: 12,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+  },
+  heroTitle: {
+    fontFamily: Fonts.serifBold,
+    fontSize: 32,
+    color: "#fff",
+    marginTop: 12,
+    lineHeight: 38,
+  },
+  heroText: {
     fontFamily: Fonts.sans,
-    fontSize: 14,
-    marginBottom: 20,
-    lineHeight: 20,
+    fontSize: 15,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 14,
+    lineHeight: 22,
   },
-  card: { borderWidth: 1, borderRadius: 16, padding: 18, gap: 12 },
-  cardTitle: { fontFamily: Fonts.serif, fontSize: 18 },
-  label: { fontFamily: Fonts.sansMedium, fontSize: 13 },
-  phoneRow: {
-    flexDirection: "row",
+  ctaButton: {
+    marginTop: 24,
+    borderRadius: 10,
+    paddingVertical: 14,
     alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
   },
-  prefix: { fontFamily: Fonts.sans, fontSize: 15 },
-  phoneInput: { flex: 1, fontFamily: Fonts.sans, fontSize: 15 },
-  otpInput: {
-    borderWidth: 1,
-    borderRadius: 10,
-    textAlign: "center",
-    fontFamily: Fonts.serif,
-    fontSize: 22,
-    paddingVertical: 12,
-    letterSpacing: 6,
+  ctaText: { fontFamily: Fonts.sansSemiBold, fontSize: 15 },
+  stepsSection: { paddingHorizontal: 24, paddingTop: 28, gap: 12 },
+  sectionTitle: { fontFamily: Fonts.serif, fontSize: 20, marginBottom: 8 },
+  stepCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
+  stepHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
+  stepBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  button: { borderRadius: 10, paddingVertical: 13, alignItems: "center" },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { fontFamily: Fonts.sansSemiBold, fontSize: 15 },
-  error: { fontFamily: Fonts.sans, fontSize: 13 },
+  stepBadgeText: { fontFamily: Fonts.serif, fontSize: 13 },
+  stepTitle: { fontFamily: Fonts.serif, fontSize: 16, flexShrink: 1 },
+  stepText: { fontFamily: Fonts.sans, fontSize: 13, marginTop: 8, lineHeight: 19 },
 });

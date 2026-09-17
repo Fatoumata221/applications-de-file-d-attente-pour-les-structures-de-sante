@@ -46,7 +46,8 @@ export default function RootLayout() {
         contentStyle: { backgroundColor: theme.background },
       }}
     >
-      <Stack.Screen name="index" options={{ title: "Tour de Rôle" }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ title: "Connexion" }} />
       <Stack.Screen name="centres" options={{ title: "Centres de santé" }} />
       <Stack.Screen
         name="rendez-vous"
