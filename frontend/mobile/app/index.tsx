@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Fonts, useTheme } from "../constants/theme";
 
 const steps = [
@@ -20,24 +21,34 @@ const steps = [
 export default function HomeScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
       style={{ backgroundColor: theme.background }}
-      contentContainerStyle={{ paddingBottom: 40 }}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
     >
-      <View style={[styles.hero, { backgroundColor: theme.primary }]}>
+      <View
+        style={[
+          styles.hero,
+          { backgroundColor: theme.primary, paddingTop: insets.top + 24 },
+        ]}
+      >
         <Text style={[styles.eyebrow, { color: theme.accent }]}>
           Centres de santé sénégalais
         </Text>
-        <Text style={styles.heroTitle}>Votre tour, sans faire la queue.</Text>
-        <Text style={styles.heroText}>
+        <Text style={[styles.heroTitle, { color: theme.onPrimary }]}>
+          Votre tour, sans faire la queue.
+        </Text>
+        <Text style={[styles.heroText, { color: theme.onPrimary }]}>
           Prenez rendez-vous dans un centre de santé et suivez la file
           d&apos;attente en direct depuis votre téléphone.
         </Text>
         <Pressable
           style={[styles.ctaButton, { backgroundColor: theme.accent }]}
           onPress={() => router.push("/login")}
+          accessibilityRole="button"
+          accessibilityLabel="Se connecter"
         >
           <Text style={[styles.ctaText, { color: theme.primaryDark }]}>
             Se connecter
@@ -83,7 +94,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { paddingHorizontal: 24, paddingTop: 48, paddingBottom: 40 },
+  hero: { paddingHorizontal: 24, paddingBottom: 40 },
   eyebrow: {
     fontFamily: Fonts.sansSemiBold,
     fontSize: 12,
@@ -93,14 +104,13 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontFamily: Fonts.serifBold,
     fontSize: 32,
-    color: "#fff",
     marginTop: 12,
     lineHeight: 38,
   },
   heroText: {
     fontFamily: Fonts.sans,
     fontSize: 15,
-    color: "rgba(255,255,255,0.85)",
+    opacity: 0.85,
     marginTop: 14,
     lineHeight: 22,
   },

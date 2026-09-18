@@ -10,6 +10,7 @@ import {
 } from "@expo-google-fonts/work-sans";
 import { Stack } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useTheme } from "../constants/theme";
 
 export default function RootLayout() {
@@ -38,25 +39,30 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: theme.primary },
-        headerTintColor: "#FFFFFF",
-        headerTitleStyle: { fontFamily: "Fraunces_600SemiBold" },
-        contentStyle: { backgroundColor: theme.background },
-      }}
-    >
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="login" options={{ title: "Connexion" }} />
-      <Stack.Screen name="centres" options={{ title: "Centres de santé" }} />
-      <Stack.Screen
-        name="rendez-vous"
-        options={{ title: "Nouveau rendez-vous" }}
-      />
-      <Stack.Screen
-        name="file-attente"
-        options={{ title: "File d'attente" }}
-      />
-    </Stack>
+    <SafeAreaProvider>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: theme.primary },
+          headerTintColor: theme.onPrimary,
+          headerTitleStyle: { fontFamily: "Fraunces_600SemiBold" },
+          contentStyle: { backgroundColor: theme.background },
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ title: "Connexion" }} />
+        <Stack.Screen
+          name="centres"
+          options={{ title: "Centres de santé" }}
+        />
+        <Stack.Screen
+          name="rendez-vous"
+          options={{ title: "Nouveau rendez-vous" }}
+        />
+        <Stack.Screen
+          name="file-attente"
+          options={{ title: "File d'attente" }}
+        />
+      </Stack>
+    </SafeAreaProvider>
   );
 }

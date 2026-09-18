@@ -9,7 +9,15 @@ export function queueLevelFromCount(count: number): QueueLevel {
   return "longue";
 }
 
-export default function StatusPill({ level }: { level: QueueLevel }) {
+type Props = {
+  level: QueueLevel;
+  /** Nombre de patients actuellement en attente. Si fourni, affiché en chiffres plutôt qu'un simple libellé. */
+  waiting?: number;
+  /** Temps d'attente estimé en minutes. */
+  estimatedMinutes?: number;
+};
+
+export default function StatusPill({ level, waiting, estimatedMinutes }: Props) {
   const theme = useTheme();
   const dotColor =
     level === "faible"
@@ -17,12 +25,19 @@ export default function StatusPill({ level }: { level: QueueLevel }) {
       : level === "moderee"
         ? theme.accent
         : theme.danger;
+
   const label =
-    level === "faible"
-      ? "File courte"
-      : level === "moderee"
-        ? "File modérée"
-        : "File longue";
+    waiting !== undefined
+      ? waiting === 0
+        ? "Aucune attente"
+        : `${waiting} en attente${
+            estimatedMinutes !== undefined ? ` · ~${estimatedMinutes} min` : ""
+          }`
+      : level === "faible"
+        ? "File courte"
+        : level === "moderee"
+          ? "File modérée"
+          : "File longue";
 
   return (
     <View style={styles.row}>

@@ -203,6 +203,33 @@ create trigger trg_create_queue_ticket
   for each row execute function public.create_queue_ticket();
 
 -- ============================================================
+-- Durcissement RLS : restrictions au niveau colonne
+--
+-- Les policies "for update using (...)" ci-dessus autorisent bien un
+-- utilisateur à modifier UNIQUEMENT ses propres lignes, mais elles ne
+-- restreignent pas QUELLES colonnes il peut changer. Sans ça :
+--   - un patient pouvait faire
+--       supabase.from('profiles').update({ role: 'admin' }).eq('id', monId)
+--     et s'auto-promouvoir agent/admin (accès en lecture à toute la file
+--     d'attente via la policy "queue_tickets_agent_select").
+--   - un patient pouvait réassigner un rendez-vous existant à un autre
+--     centre/service, ou en falsifier le statut ('termine'/'absent').
+-- On restreint donc, au niveau Postgres (GRANT/REVOKE), les colonnes
+-- que le rôle `authenticated` peut modifier — en plus des policies RLS
+-- qui restent responsables du filtrage par ligne.
+-- ============================================================
+revoke update on public.profiles from authenticated;
+grant update (full_name, preferred_centre_id, notifications_sms, language)
+  on public.profiles to authenticated;
+
+-- Aucun cas d'usage actuel ne nécessite qu'un patient modifie un
+-- rendez-vous après création (annulation non implémentée côté client) :
+-- on retire la capacité d'update plutôt que de la restreindre à une
+-- colonne, pour ne rien laisser d'exploitable.
+revoke update on public.appointments from authenticated;
+drop policy if exists "appointments_self_update" on public.appointments;
+
+-- ============================================================
 -- Données de démonstration (à supprimer en production)
 -- ============================================================
 insert into public.centres (name, address, city) values

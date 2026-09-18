@@ -27,11 +27,14 @@ export default function PillTabs() {
                   styles.pill,
                   active && { backgroundColor: theme.primary },
                 ]}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={tab.label}
               >
                 <Text
                   style={[
                     styles.pillText,
-                    { color: active ? "#fff" : theme.inkSoft },
+                    { color: active ? theme.onPrimary : theme.inkSoft },
                   ]}
                 >
                   {tab.label}
@@ -48,6 +51,11 @@ export default function PillTabs() {
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 4 },
   track: { flexDirection: "row", borderRadius: 999, padding: 4, gap: 4 },
-  pill: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
+  pill: {
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    minHeight: 44,
+    justifyContent: "center",
+  },
   pillText: { fontFamily: Fonts.sansMedium, fontSize: 13 },
 });

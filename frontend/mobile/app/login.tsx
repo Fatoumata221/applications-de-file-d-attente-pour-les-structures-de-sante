@@ -96,6 +96,8 @@ export default function LoginScreen() {
               ]}
               onPress={handleSend}
               disabled={phone.length < 9 || loading}
+              accessibilityRole="button"
+              accessibilityLabel="Recevoir mon code par SMS"
             >
               {loading ? (
                 <ActivityIndicator />
@@ -131,11 +133,13 @@ export default function LoginScreen() {
               ]}
               onPress={handleVerify}
               disabled={code.length < 6 || loading}
+              accessibilityRole="button"
+              accessibilityLabel="Valider et continuer"
             >
               {loading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={theme.onPrimary} />
               ) : (
-                <Text style={[styles.buttonText, { color: "#fff" }]}>
+                <Text style={[styles.buttonText, { color: theme.onPrimary }]}>
                   Valider et continuer
                 </Text>
               )}
@@ -184,7 +188,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     letterSpacing: 6,
   },
-  button: { borderRadius: 10, paddingVertical: 13, alignItems: "center" },
+  button: {
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: "center",
+    minHeight: 48,
+    justifyContent: "center",
+  },
   buttonDisabled: { opacity: 0.5 },
   buttonText: { fontFamily: Fonts.sansSemiBold, fontSize: 15 },
   error: { fontFamily: Fonts.sans, fontSize: 13 },
